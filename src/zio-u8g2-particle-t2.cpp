@@ -38,14 +38,19 @@ class OLEDWrapper {
       digitalWrite(10, 0);
       digitalWrite(9, 0);
       publishEvent("startup()", "before u8g2.initDisplay()");
-      u8g2.initDisplay();
+// Have to break out separate commands fron u8g2.begin() since modified
+// library is not uploaded as part of Cloud Compile.
 //      publishEvent("startup()", "before u8g2.begin()");
 //      u8g2.begin();
-/*      publishEvent("startup()", "after u8g2.begin()");
-      publishEvent("startup()", "before u8g2.setBusClock()");
+      u8g2.initDisplay();
+      delay(3000);
+      publishEvent("startup()", "before u8g2.firstPage()");
+      u8g2.firstPage(); // Currently causes a spark/device/last_reset == "panic, hard_fault" and endless restarts
+      delay(3000);
+//      do {
+//      } while ( u8g2.nextPage() );
       u8g2.setBusClock(400000);
-      publishEvent("startup()", "after u8g2.setBusClock()");
-*/
+      publishEvent("startup()", "done");
     }
     void startDisplay(const uint8_t *font) {
       u8g2_prepare();
