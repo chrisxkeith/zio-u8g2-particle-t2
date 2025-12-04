@@ -32,23 +32,35 @@ class OLEDWrapper {
       u8g2.setDrawColor(COLOR_WHITE);
       u8g2.setFontDirection(0);
     }
+    void firstPage() {
+      u8g2.firstPage(); // Currently causes a spark/device/last_reset == "panic, hard_fault" and endless restarts
+/*      if ( u8g2->is_auto_page_clear )
+      {
+        u8g2_ClearBuffer(u8g2);
+      }
+      u8g2_SetBufferCurrTileRow(u8g2, 0);
+*/
+    }
+    void begin() {
+// Have to break out separate commands fron u8g2.begin() since modified
+// library is not uploaded as part of Cloud Compile.
+//      publishEvent("startup()", "before u8g2.begin()");
+//      u8g2.begin();
+      publishEvent("startup()", "before u8g2.initDisplay()");
+      u8g2.initDisplay();
+      delay(3000);
+      publishEvent("startup()", "before firstPage()");
+      firstPage();
+      delay(3000);
+//      do {
+//      } while ( u8g2.nextPage() );
+    }
     void startup() {
       pinMode(10, OUTPUT);
       pinMode(9, OUTPUT);
       digitalWrite(10, 0);
       digitalWrite(9, 0);
-      publishEvent("startup()", "before u8g2.initDisplay()");
-// Have to break out separate commands fron u8g2.begin() since modified
-// library is not uploaded as part of Cloud Compile.
-//      publishEvent("startup()", "before u8g2.begin()");
-//      u8g2.begin();
-      u8g2.initDisplay();
-      delay(3000);
-      publishEvent("startup()", "before u8g2.firstPage()");
-      u8g2.firstPage(); // Currently causes a spark/device/last_reset == "panic, hard_fault" and endless restarts
-      delay(3000);
-//      do {
-//      } while ( u8g2.nextPage() );
+      begin();
       u8g2.setBusClock(400000);
       publishEvent("startup()", "done");
     }
