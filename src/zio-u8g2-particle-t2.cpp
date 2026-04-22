@@ -116,10 +116,8 @@ void setup() {
 
 int nLoops = 0;
 void loop() {
-  if (nLoops == 0) {
-    publishEvent("loop", String(nLoops));
-    delay(5000);
-  }
+  publishEvent("loop", String(nLoops));
+  //  oledWrapper->test();
+  delay(2000);
   nLoops++;
-//  oledWrapper->test();
 }
