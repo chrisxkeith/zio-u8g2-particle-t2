@@ -163,6 +163,9 @@ class U8G2 : public Print
     void clearBuffer(void) { u8g2_ClearBuffer(&u8g2); }    
     
     void firstPage(void) { u8g2_FirstPage(&u8g2); }
+    typedef void (*publish_event_func)(const char *, const char *);
+    void firstPage_(publish_event_func publishEvent) {
+        u8g2_FirstPage_(&u8g2, publishEvent); }
     uint8_t nextPage(void) { return u8g2_NextPage(&u8g2); }
     
     uint8_t *getBufferPtr(void) { return u8g2_GetBufferPtr(&u8g2); }

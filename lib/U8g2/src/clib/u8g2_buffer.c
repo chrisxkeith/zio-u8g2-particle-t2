@@ -46,6 +46,19 @@ void u8g2_ClearBuffer(u8g2_t *u8g2)
   memset(u8g2->tile_buf_ptr, 0, cnt);
 }
 
+void u8g2_ClearBuffer_(u8g2_t *u8g2, publish_event_func publishEvent)
+{
+  size_t cnt;
+  (*publishEvent)("u8g2_ClearBuffer_", "before u8g2_GetU8x8");
+  cnt = u8g2_GetU8x8(u8g2)->display_info->tile_width;
+  cnt *= u8g2->tile_buf_height;
+  cnt *= 8;
+  char buf[100];
+  snprintf(buf, sizeof(buf), "cnt=%d, u8g2->tile_buf_ptr=%d", (int)cnt, (int)u8g2->tile_buf_ptr);
+  (*publishEvent)("u8g2_ClearBuffer_", buf);
+  memset(u8g2->tile_buf_ptr, 0, cnt);
+}
+
 /*============================================*/
 
 static void u8g2_send_tile_row(u8g2_t *u8g2, uint8_t src_tile_row, uint8_t dest_tile_row)
@@ -110,6 +123,17 @@ void u8g2_FirstPage(u8g2_t *u8g2)
   {
     u8g2_ClearBuffer(u8g2);
   }
+  u8g2_SetBufferCurrTileRow(u8g2, 0);
+}
+
+void u8g2_FirstPage_(u8g2_t *u8g2, publish_event_func publishEvent)
+{
+  if ( u8g2->is_auto_page_clear )
+  {
+    (*publishEvent)("u8g2_FirstPage_", "before u8g2_ClearBuffer");
+    u8g2_ClearBuffer_(u8g2, publishEvent);
+  }
+  (*publishEvent)("u8g2_FirstPage_", "before u8g2_SetBufferCurrTileRow");
   u8g2_SetBufferCurrTileRow(u8g2, 0);
 }
 

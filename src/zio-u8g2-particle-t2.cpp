@@ -33,7 +33,9 @@ class OLEDWrapper {
       u8g2.setFontDirection(0);
     }
     void firstPage() {
-      u8g2.firstPage(); // Currently causes a spark/device/last_reset == "panic, hard_fault" and endless restarts
+      u8g2.firstPage_(&publishEvent); 
+      // Currently causes a spark/device/last_reset == "panic, hard_fault" 
+      // after about 15 seconds, and then endless restarts
 /*      if ( u8g2->is_auto_page_clear )
       {
         u8g2_ClearBuffer(u8g2);
@@ -61,7 +63,7 @@ class OLEDWrapper {
       digitalWrite(10, 0);
       digitalWrite(9, 0);
       begin();
-      u8g2.setBusClock(400000);
+      // u8g2.setBusClock(400000);
       publishEvent("startup()", "done");
     }
     void startDisplay(const uint8_t *font) {
