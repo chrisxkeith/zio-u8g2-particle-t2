@@ -57,6 +57,7 @@ void u8g2_ClearBuffer_(u8g2_t *u8g2, publish_event_func publishEvent)
   snprintf(buf, sizeof(buf), "cnt=%d, u8g2->tile_buf_ptr=%d", (int)cnt, (int)u8g2->tile_buf_ptr);
   (*publishEvent)("u8g2_ClearBuffer_", buf);
   memset(u8g2->tile_buf_ptr, 0, cnt);
+  (*publishEvent)("u8g2_ClearBuffer_", "after memset");
 }
 
 /*============================================*/

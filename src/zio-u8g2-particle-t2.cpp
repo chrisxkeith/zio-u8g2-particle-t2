@@ -20,20 +20,20 @@ void publishEvent(const char* eventName, const char* data) {
 
 #include <U8g2lib.h>
 
-U8G2_SSD1327_EA_W128128_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); /* Uno: A4=SDA, A5=SCL, add "u8g2.setBusClock(400000);" into setup() for speedup if possible */
+U8G2_SSD1327_EA_W128128_F_HW_I2C* u8g2 = nullptr;
 
 const int COLOR_WHITE = 1;
 const int COLOR_BLACK = 0;
 class OLEDWrapper {
   public:
     void u8g2_prepare(void) {
-      u8g2.setFont(u8g2_font_fur49_tn);
-      u8g2.setFontRefHeightExtendedText();
-      u8g2.setDrawColor(COLOR_WHITE);
-      u8g2.setFontDirection(0);
+      u8g2->setFont(u8g2_font_fur49_tn);
+      u8g2->setFontRefHeightExtendedText();
+      u8g2->setDrawColor(COLOR_WHITE);
+      u8g2->setFontDirection(0);
     }
     void firstPage() {
-      u8g2.firstPage_(&publishEvent); 
+      u8g2->firstPage_(&publishEvent); 
       // Currently causes a spark/device/last_reset == "panic, hard_fault" 
       // after about 15 seconds, and then endless restarts
 /*      if ( u8g2->is_auto_page_clear )
@@ -44,57 +44,58 @@ class OLEDWrapper {
 */
     }
     void begin() {
-// Have to break out separate commands fron u8g2.begin() since modified
+// Have to break out separate commands fron u8g2->begin() since modified
 // library is not uploaded as part of Cloud Compile.
-//      publishEvent("startup()", "before u8g2.begin()");
-//      u8g2.begin();
-      publishEvent("startup()", "before u8g2.initDisplay()");
-      u8g2.initDisplay();
+//      publishEvent("startup()", "before u8g2->begin()");
+//      u8g2->begin();
+      publishEvent("startup()", "before u8g2->initDisplay()");
+      u8g2->initDisplay();
       delay(3000);
       publishEvent("startup()", "before firstPage()");
       firstPage();
       delay(3000);
 //      do {
-//      } while ( u8g2.nextPage() );
+//      } while ( u8g2->nextPage() );
     }
     void startup() {
+      u8g2 = new U8G2_SSD1327_EA_W128128_F_HW_I2C(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
       pinMode(10, OUTPUT);
       pinMode(9, OUTPUT);
       digitalWrite(10, 0);
       digitalWrite(9, 0);
       begin();
-      // u8g2.setBusClock(400000);
+      // u8g2->setBusClock(400000);
       publishEvent("startup()", "done");
     }
     void startDisplay(const uint8_t *font) {
       u8g2_prepare();
-      u8g2.clearBuffer();
-      u8g2.setFont(font);
+      u8g2->clearBuffer();
+      u8g2->setFont(font);
     }
     void endDisplay() {
-      u8g2.sendBuffer();
+      u8g2->sendBuffer();
     }
     void test() {
       for (u8g2_uint_t h = 97; h >= 95; h--) {
-        u8g2.clear();
+        u8g2->clear();
         delay(1000);
         startDisplay(u8g2_font_fur11_tf);
-        u8g2.drawFrame(0, 0, getWidth(), h);
+        u8g2->drawFrame(0, 0, getWidth(), h);
         String s(h);
         s.concat(" (full)");
-        u8g2.drawUTF8(8, 32, s.c_str());
+        u8g2->drawUTF8(8, 32, s.c_str());
         endDisplay();
         delay(2000);
       }
     }
     int getHeight() {
-      return 96; // ??? why does u8g2.getHeight() return 128 ???
+      return 96; // ??? why does u8g2->getHeight() return 128 ???
     }
     int getWidth() {
-      return u8g2.getWidth();
+      return u8g2->getWidth();
     }
 };
-OLEDWrapper* oledWrapper = new OLEDWrapper();
+OLEDWrapper* oledWrapper = nullptr;
 
 int handleCmd(String command) {
   if (command.equals("ping")) {
@@ -113,12 +114,18 @@ void setup() {
   delay(3000);
   Particle.function("handleCmd", handleCmd);
   publishEvent("setup", "--------------------------------------");
-  oledWrapper->startup();
+  // oledWrapper->startup();
 }
 
+bool isFirstLoop = true;
 int nLoops = 0;
 void loop() {
   publishEvent("loop", String(nLoops));
+  if (isFirstLoop) {
+    oledWrapper = new OLEDWrapper();
+    oledWrapper->startup();
+    isFirstLoop = false;
+  }
   //  oledWrapper->test();
   delay(2000);
   nLoops++;
